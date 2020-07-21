@@ -40,8 +40,11 @@ class Command:
             if not self.cog.cog_check(ctx):
                 return
 
-        return self.func(ctx)
-
+        if self.cog:
+            return self.func(self.cog, ctx)
+        else:
+            return self.func(ctx)
+            
 class Group:
     """Basicly the same as as the Command class except you can create subcommands"""
 
@@ -100,7 +103,10 @@ class Group:
                     subcommand.invoke(update, context)
                     return
 
-        return self.func(ctx)
+        if self.cog:
+            return self.func(self.cog, ctx)
+        else:
+            return self.func(ctx)
     
 class Cog:
     """Represents an cog loaded into the bot"""
