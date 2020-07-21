@@ -17,7 +17,7 @@ class Command:
     def invoke(self, update, context):
         """Runs a comand"""
 
-        ctx = Context(self, update, context)
+        ctx = self.bot.get_context(update.effective_message)
         return self.func(ctx)
 
 class Cog:

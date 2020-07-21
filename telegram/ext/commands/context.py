@@ -1,18 +1,14 @@
 class Context:
     """Context in a command"""
 
-    def __init__(self, command, update, context):
+    def __init__(self, command, **kwargs):
         self.command = command
-
-        self.update = update
-        self.context = context
-
-        self.message = update.effective_message
-        self.chat = update.effective_chat
-        self.author = update.effective_user
-        self.args = context.args
-
         self.bot = command.bot
+
+        self.message = kwargs.get("message")
+        self.chat = kwargs.get("chat")
+        self.author = kwargs.get("author")
+        self.args = kwargs.get("args")
 
     def send(self, content):
         """Shortcut for bot.send_message"""

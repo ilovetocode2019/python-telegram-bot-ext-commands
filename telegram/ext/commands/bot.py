@@ -4,6 +4,8 @@ import inspect
 
 from .core import Command, Cog
 from .errors import NotFound, CommandAlreadyExists, LoadError
+from .context import Context
+from .utils import parse_args
 
 class Bot:
     """Represent a telegram bot"""
@@ -17,13 +19,24 @@ class Bot:
 
         self.cogs_dict = {}
 
+    def get_context(self, message):
+        command, args = parse_args(message.text)
+
+        command = self.commands_dict[str(command)]
+        kwargs = {"command":command, "args":args}
+        kwargs["message"] = message
+        kwargs["chat"] = message.chat
+        kwargs["author"] = message.from_user
+
+        return Context(**kwargs)
+
     def command(self, *args, **kwargs):
         """Turns a function into a command"""
 
         def deco(func):
             name = kwargs.get("name") or func.__name__
             kwargs["bot"] = self
-            
+
             if name in self.commands_dict:
                 raise CommandAlreadyExists("A command with that name already exists")
 
