@@ -11,9 +11,27 @@ class Command:
         self.description = kwargs.get("description")
         self.usgae = kwargs.get("usage")
         self.hidden = kwargs.get("hidden") or False
+        self.cog = kwargs.get("cog")
 
     def invoke(self, update, context):
         """Runs a a comand"""
 
         ctx = Context(self, update, context)
         return self.func(ctx)
+
+class Cog:
+    """Represents an cog loaded into the bot"""
+
+    def __init__(self, name, commands):
+        self.name = name
+        self.commands = commands
+
+def command(*args, **kwargs):
+    """Turns a function into a command"""
+
+    def deco(func):
+        name = kwargs.get("name") or func.__name__
+        command = Command(func, **kwargs)
+        return command
+    
+    return deco
