@@ -2,7 +2,7 @@ from telegram.ext import Updater, CommandHandler
 import importlib
 import inspect
 
-from .core import Command, Cog
+from .core import Command, Group, Cog
 from .errors import NotFound, CommandAlreadyExists, LoadError
 from .context import Context
 from .utils import parse_args
@@ -81,6 +81,57 @@ class Bot:
         self._handlers.pop(name)
         self.commands_dict.pop(name)
 
+    def group(self, *args, **kwargs):
+        """Turns a function into a command group"""
+
+        def deco(func):
+            name = kwargs.get("name") or func.__name__
+            kwargs["bot"] = self
+
+            if name in self.commands_dict:
+                raise CommandAlreadyExists("A command with that name already exists")
+
+            command = Group(func, **kwargs)
+            
+            handler = CommandHandler(name, command.invoke)
+            self.dispatcher.add_handler(handler)
+
+            self._handlers[name] = handler
+            self.commands_dict[name] = command
+
+            return command
+        
+        return deco
+
+    def add_command(self, func, **kwargs):
+        """Adds a function as a command group"""
+
+        name = kwargs.get("name") or func.__name__
+        kwargs["bot"] = self
+
+        if name in self.commands_dict:
+            raise CommandAlreadyExists("A command with that name already exists")
+
+        command = Command(func, **kwargs)
+
+        handler = CommandHandler(name, command.invoke)
+        self.dispatcher.add_handler(handler)
+
+        self._handlers[name] = handler
+        self.commands_dict[name] = command
+
+    def add_group(self, group, **kwargs):
+        """Adds a function as a command group"""
+
+        if group.name in self.commands_dict:
+            raise CommandAlreadyExists("A command with that name already exists")
+
+        handler = CommandHandler(group.name, group.invoke)
+        self.dispatcher.add_handler(handler)
+
+        self._handlers[group.name] = handler
+        self.commands_dict[group.name] = group
+
     @property
     def commands(self):
         """A list of commands in the bot"""
@@ -110,11 +161,15 @@ class Bot:
         cog_commands = []
         for command in dir(cog):
             command = getattr(cog, command)
-            if isinstance(command, Command):
+            if isinstance(command, Command) or isinstance(command, Group):
                 command.bot = self
                 command.cog = cog
 
-                self.add_command(command.func, name=command.name, description=command.description, usage=command.usage, hidden=command.hidden, cog=command.cog, bot=command.bot)
+                if isinstance(command, Command):
+                    if not command.parent:
+                        self.add_command(command.invoke, name=command.name, description=command.description, usage=command.usage, hidden=command.hidden, cog=command.cog, bot=command.bot)
+                else:
+                    self.add_group(command)
 
         if hasattr(cog, "cog_check"):
             if not inspect.ismethod(cog.cog_check):
