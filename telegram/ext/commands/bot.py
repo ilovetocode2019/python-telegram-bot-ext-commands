@@ -68,7 +68,7 @@ class Bot:
     def commands(self):
         """A list of commands in the bot"""
 
-        return list(self.commands_dict.keys())
+        return list(self.commands_dict.values())
 
     def load_extension(self, location):
         """Loads an extension into the bot"""
@@ -108,7 +108,7 @@ class Bot:
 
     @property
     def cogs(self):
-        return list(self.cogs_dict.keys())
+        return list(self.cogs_dict.values())
 
     def run(self, idle=True):
         """Runs the bot"""
