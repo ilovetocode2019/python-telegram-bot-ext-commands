@@ -12,6 +12,7 @@ class Command:
         self.usgae = kwargs.get("usage")
         self.hidden = kwargs.get("hidden") or False
         self.cog = kwargs.get("cog")
+        self.bot = kwargs.get("bot")
 
     def invoke(self, update, context):
         """Runs a a comand"""

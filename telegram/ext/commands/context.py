@@ -11,9 +11,10 @@ class Context:
         self.chat = update.effective_chat
         self.author = update.effective_user
         self.args = context.args
-        self.bot = context.bot
+
+        self.bot = command.bot
 
     def send(self, content):
         """Shortcut for bot.send_message"""
 
-        self.bot.send_message(chat_id=self.chat.id, text=content)
+        self.bot.updater.bot.send_message(chat_id=self.chat.id, text=content)

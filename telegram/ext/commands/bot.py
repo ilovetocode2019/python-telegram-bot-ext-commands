@@ -22,6 +22,8 @@ class Bot:
 
         def deco(func):
             name = kwargs.get("name") or func.__name__
+            kwargs["bot"] = self
+            
             if name in self.commands_dict:
                 raise CommandAlreadyExists("A command with that name already exists")
 
@@ -41,6 +43,8 @@ class Bot:
         """Adds a function as a command"""
 
         name = kwargs.get("name") or func.__name__
+        kwargs["bot"] = self
+
         if name in self.commands_dict:
             raise CommandAlreadyExists("A command with that name already exists")
 
@@ -94,6 +98,7 @@ class Bot:
         for command in dir(cog):
             command = getattr(cog, command)
             if isinstance(command, Command):
+                command.bot = self
                 command.cog = cog
                 
                 self.commands_dict[command.name] = command
