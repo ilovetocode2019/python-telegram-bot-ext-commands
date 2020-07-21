@@ -14,3 +14,8 @@ class Context:
         """Shortcut for bot.send_message"""
 
         self.bot.updater.bot.send_message(chat_id=self.chat.id, text=content)
+
+    def reply(self, content):
+        """Replys to the message"""
+
+        self.message.reply_text(content, reply=self.message.message_id)
