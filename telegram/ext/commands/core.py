@@ -1,4 +1,5 @@
 from .context import Context
+from .errors import NotFound
 
 class Command:
     """Represents a command"""
@@ -9,24 +10,42 @@ class Command:
         self._data = kwargs
         self.name = kwargs.get("name") or func.__name__
         self.description = kwargs.get("description")
-        self.usgae = kwargs.get("usage")
+        self.usage = kwargs.get("usage")
         self.hidden = kwargs.get("hidden") or False
         self.cog = kwargs.get("cog")
         self.bot = kwargs.get("bot")
-
+        self.checks = []
+    
+    def add_check(self, func):
+        self.checks.append(func)
+    
+    def remove_check(self, func):
+        if func not in self.checks:
+            raise NotFound("That function is not yet a check")
+        self.checks.remove(func)
+        
     def invoke(self, update, context):
-        """Runs a comand"""
+        """Runs a comand with checks"""
 
         ctx = self.bot.get_context(update.effective_message)
+
+        for check in self.checks:
+            if not check(ctx):
+                return
+
+        if self.cog:
+            if not self.cog.cog_check(ctx):
+                return
+
         return self.func(ctx)
 
 class Cog:
     """Represents an cog loaded into the bot"""
 
-    def __init__(self, name, commands):
+    def __init__(self, name, commands, check):
         self.name = name
         self.commands = commands
-
+        
 def command(*args, **kwargs):
     """Turns a function into a command"""
 

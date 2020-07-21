@@ -113,16 +113,21 @@ class Bot:
             if isinstance(command, Command):
                 command.bot = self
                 command.cog = cog
-                
-                self.commands_dict[command.name] = command
-                cog_commands.append(command)
 
-                handler = CommandHandler(command.name, command.invoke)
-                self._handlers[command.name] = handler
+                self.add_command(command.func, name=command.name, description=command.description, usage=command.usage, hidden=command.hidden, cog=command.cog, bot=command.bot)
 
-                self.dispatcher.add_handler(handler)
+        if hasattr(cog, "cog_check"):
+            if not inspect.ismethod(cog.cog_check):
+                raise LoadError("Cog check is not a function")
+                return
 
-        self.cogs_dict[cog.__class__.__name__] = Cog(cog.__class__.__name__, cog_commands)
+            cog_check = cog.cog_check
+        else:
+            def cog_check(context):
+                return True
+            cog.cog_check = cog_check
+
+        self.cogs_dict[cog.__class__.__name__] = Cog(cog.__class__.__name__, cog_commands, cog_check)
 
     @property
     def cogs(self):
