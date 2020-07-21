@@ -15,7 +15,7 @@ class Command:
         self.bot = kwargs.get("bot")
 
     def invoke(self, update, context):
-        """Runs a a comand"""
+        """Runs a comand"""
 
         ctx = Context(self, update, context)
         return self.func(ctx)
