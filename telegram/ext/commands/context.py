@@ -10,10 +10,10 @@ class Context:
         self.author = kwargs.get("author")
         self.args = kwargs.get("args")
 
-    def send(self, content):
+    def send(self, content, parse_mode=None):
         """Shortcut for bot.send_message"""
 
-        self.bot.updater.bot.send_message(chat_id=self.chat.id, text=content)
+        self.bot.updater.bot.send_message(chat_id=self.chat.id, text=content, parse_mode=parse_mode)
 
     def reply(self, content):
         """Replys to the message"""
