@@ -75,7 +75,6 @@ class Bot:
 
         if name not in self.commands:
             raise NotFound("No command by that name")
-            return
 
         self.dispatcher.remove_handler(self._handlers[name])
         self._handlers.pop(name)
@@ -126,7 +125,6 @@ class Bot:
     def add_cog(self, cog):
         if not issubclass(cog.__class__, Cog):
             raise LoadError("Cogs must be a subclass of Cog")
-            return
 
         cog_commands = []
         for command in dir(cog):
@@ -139,7 +137,6 @@ class Bot:
         if hasattr(cog, "cog_check"):
             if not inspect.ismethod(cog.cog_check):
                 raise LoadError("Cog check is not a function")
-                return
 
             cog_check = cog.cog_check
         else:
