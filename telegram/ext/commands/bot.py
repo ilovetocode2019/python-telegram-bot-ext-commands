@@ -124,6 +124,10 @@ class Bot:
             self.remove_command(command.name)
 
     def add_cog(self, cog):
+        if not issubclass(cog.__class__, Cog):
+            raise LoadError("Cogs must be a subclass of Cog")
+            return
+
         cog_commands = []
         for command in dir(cog):
             command = getattr(cog, command)
@@ -143,8 +147,9 @@ class Bot:
                 return True
             cog.cog_check = cog_check
 
-        self.cogs_dict[cog.__class__.__name__] = Cog(cog.__class__.__name__, cog_commands, cog_check)
-
+        cog.name = cog.__class__.__name__
+        cog.commands = cog_commands
+        self.cogs_dict[cog.name] = cog
     @property
     def cogs(self):
         return list(self.cogs_dict.values())

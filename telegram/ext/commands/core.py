@@ -45,12 +45,10 @@ class Command:
             return self.func(ctx)
 
 class Cog:
-    """Represents an cog loaded into the bot"""
+    """The class to subclass a cog from"""
 
-    def __init__(self, name, commands, check):
-        self.name = name
-        self.commands = commands
-        
+    pass
+
 def command(*args, **kwargs):
     """Turns a function into a command"""
 
