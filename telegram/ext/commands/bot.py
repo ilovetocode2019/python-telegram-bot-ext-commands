@@ -5,6 +5,7 @@ import inspect
 from .core import Command, Cog
 from .errors import NotFound, CommandAlreadyExists, LoadError
 from .context import Context
+from .help import help_command
 from .utils import parse_args
 
 class Bot:
@@ -18,6 +19,9 @@ class Bot:
         self._handlers = {}
 
         self.cogs_dict = {}
+
+        self.help_command = help_command
+        self.add_command(help_command, name="help", description="Help for the bot", usage="<command|category>")
 
     def get_context(self, message):
         command, args = parse_args(message.text)
@@ -130,6 +134,7 @@ class Bot:
         for command in dir(cog):
             command = getattr(cog, command)
             if isinstance(command, Command):
+                cog_commands.append(command)
                 command.bot = self
                 command.cog = cog
                 self.add_command(command.func, name=command.name, description=command.description, usage=command.usage, hidden=command.hidden, cog=command.cog, bot=command.bot)
