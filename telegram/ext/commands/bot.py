@@ -23,12 +23,12 @@ class Bot:
         self.extensions = {}
 
         self.help_command = help_command
-        self.add_command(help_command, name="help", description="Help for the bot", usage="<command|category>")
+        self.add_command(help_command, name="help", description="Help for the bot", usage="[command|category]", aliases=["start"])
 
     def get_context(self, message):
         command, args = parse_args(message.text)
 
-        command = self.commands_dict[str(command)]
+        command = self.get_command(command)
         kwargs = {"command":command, "args":args}
         kwargs["message"] = message
         kwargs["chat"] = message.chat
@@ -54,6 +54,12 @@ class Bot:
             self._handlers[name] = handler
             self.commands_dict[name] = command
 
+
+            for alias in command.aliases:
+                handler = CommandHandler(alias, command.invoke)
+                self.dispatcher.add_handler(handler)
+                self.commands_dict[alias] = command
+
             return command
         
         return deco
@@ -71,43 +77,42 @@ class Bot:
 
         handler = CommandHandler(name, command.invoke)
         self.dispatcher.add_handler(handler)
-
         self._handlers[name] = handler
-        self.commands_dict[name] = command
 
-        return command
 
-    def add_command(self, func, **kwargs):
-        """Adds a function as a command"""
+        for alias in command.aliases:
+            handler = CommandHandler(alias, command.invoke)
+            self.dispatcher.add_handler(handler)
+            self._handlers[alias] = handler
 
-        name = kwargs.get("name") or func.__name__
-        kwargs["bot"] = self
-
-        if name in self.commands_dict:
-            raise CommandAlreadyExists("A command with that name already exists")
-
-        command = Command(func, **kwargs)
-
-        handler = CommandHandler(name, command.invoke)
-        self.dispatcher.add_handler(handler)
-
-        self._handlers[name] = handler
         self.commands_dict[name] = command
 
     def remove_command(self, name):
         """Removes a command"""
 
-        if name not in [x.name for x in self.commands]:
+        if not self.get_command(name):
             raise NotFound("No command by that name")
 
-        command = self.commands_dict[name]
+        command = self.get_command(name)
 
         if command.cog:
             command.cog.commands.remove(command)
 
-        self.dispatcher.remove_handler(self._handlers[name])
-        self._handlers.pop(name)
-        self.commands_dict.pop(name)
+        for alias in command.aliases:
+            self.dispatcher.remove_handler(self._handlers[alias])
+            self._handlers.pop(alias)
+
+        self.dispatcher.remove_handler(self._handlers[command.name])
+        self._handlers.pop(command.name)
+        self.commands_dict.pop(command.name)
+
+    def get_command(self, name):
+        if name in self.commands_dict:
+            return self.commands_dict[name]
+        
+        for command in self.commands:
+            if name in command.aliases:
+                return command
 
     @property
     def commands(self):
@@ -160,8 +165,13 @@ class Bot:
 
                 handler = CommandHandler(command.name, command.invoke)
                 self.dispatcher.add_handler(handler)
-
                 self._handlers[command.name] = handler
+
+                for alias in command.aliases:
+                    handler = CommandHandler(alias, command.invoke)
+                    self.dispatcher.add_handler(handler)
+                    self._handlers[alias] = handler
+
                 self.commands_dict[command.name] = command
                 
         if hasattr(cog, "cog_check"):

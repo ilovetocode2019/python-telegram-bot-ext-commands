@@ -13,6 +13,7 @@ class Command:
         self.name = kwargs.get("name") or func.__name__
         self.description = kwargs.get("description")
         self.usage = kwargs.get("usage")
+        self.aliases = kwargs.get("aliases") or []
         self.hidden = kwargs.get("hidden") or False
         self.cog = kwargs.get("cog")
         self.bot = kwargs.get("bot")

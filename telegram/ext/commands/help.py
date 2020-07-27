@@ -19,7 +19,11 @@ def help_command(ctx):
     else:
         command = ctx.bot.commands_dict.get(command_name)
         if command:
-            ctx.send(f"/{command.name} {command.usage or ''} - {command.description or 'No description'}")
+            msg = f"/{command.name} {command.usage or ''} - {command.description or 'No description'}\n"
+            if len(command.aliases) != 0:
+                msg += f"\nAliases: {', '.join(command.aliases)}"
+            ctx.send(msg)
+
             return
 
         cog = ctx.bot.cogs_dict.get(command_name)
