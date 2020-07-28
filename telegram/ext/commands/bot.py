@@ -66,7 +66,7 @@ class Bot:
                             raise IndexError()
 
                         converter = argument.annotation
-                        if converter:
+                        if converter != inspect._empty:
                             try:
                                 if converter == telegram.ChatMember:
                                     give = self.updater.bot.get_chat_member(chat_id=message.chat.id, user_id=give)
