@@ -1,4 +1,5 @@
 import re
+import inspect
 
 from .context import Context
 from .errors import NotFound
@@ -40,11 +41,13 @@ class Command:
             if not self.cog.cog_check(ctx):
                 return
 
+        other_args = []
         if self.cog:
-            return self.func(self.cog, ctx)
-        else:
-            return self.func(ctx)
+            other_args.append(self.cog)
+        other_args.append(ctx)
 
+        return self.func(*other_args, *ctx.args, **ctx.kwargs)
+      
 class Cog:
     """The class to subclass a cog from"""
 

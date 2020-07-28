@@ -1,9 +1,4 @@
-def help_command(ctx):
-    try:
-        command_name = ctx.args[0]
-    except IndexError:
-        command_name = None
-
+def help_command(ctx, command_name=None):
     if not command_name:
         msg = ""
         for cog in ctx.bot.cogs:

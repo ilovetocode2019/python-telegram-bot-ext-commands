@@ -9,6 +9,7 @@ class Context:
         self.chat = kwargs.get("chat")
         self.author = kwargs.get("author")
         self.args = kwargs.get("args")
+        self.kwargs = kwargs.get("kwargs")
 
     def send(self, content, parse_mode=None):
         """Shortcut for bot.send_message"""
