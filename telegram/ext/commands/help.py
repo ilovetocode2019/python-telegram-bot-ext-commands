@@ -4,7 +4,7 @@ def help_command(ctx, command_name=None):
         for cog in ctx.bot.cogs:
             msg += "\n\n"
             msg += cog.name + "\n"
-            msg += "\n".join([f"/{command.name} - {command.description or 'No description'}" for command in cog.commands])
+            msg += "\n".join([f"/{command.name} - {command.description or 'No description'}" for command in cog.commands if not command.hidden])
         
         msg += "\n\nNo category\n"
         msg += "\n".join([f"/{command.name}" for command in ctx.bot.commands if not command.cog])
@@ -13,7 +13,7 @@ def help_command(ctx, command_name=None):
 
     else:
         command = ctx.bot.commands_dict.get(command_name)
-        if command:
+        if command and not command.hidden:
             msg = f"/{command.name} {command.usage or ''} - {command.description or 'No description'}\n"
             if len(command.aliases) != 0:
                 msg += f"\nAliases: {', '.join(command.aliases)}"
