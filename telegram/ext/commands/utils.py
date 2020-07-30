@@ -2,7 +2,7 @@ def parse_args(content):
     """Gets the command name and arguments from message content"""
 
     #Split the message
-    splited = content.split()
+    splited = content.split(" ")
     command_text = splited[0]
 
     args = splited[1:]
