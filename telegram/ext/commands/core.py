@@ -57,6 +57,7 @@ def command(*args, **kwargs):
     """Turns a function into a command"""
 
     def deco(func):
+        kwargs["name"] = kwargs.get("name") or func.__name__
         command = Command(func, **kwargs)
         return command
     
