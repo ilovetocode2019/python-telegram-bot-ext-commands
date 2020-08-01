@@ -2,7 +2,7 @@ import re
 import inspect
 
 from .context import Context
-from .errors import NotFound
+from .errors import NotFound, ArgumentError
 from .utils import parse_args
 
 class Command:
@@ -53,7 +53,7 @@ class Command:
                                 else:
                                     give = argument.annotation(give)
                             except:
-                                raise ValueError(f"Failed to convert {give} to {converter}")
+                                raise ArgumentError(f"Failed to convert '{give}' to '{converter.__name__}'")
     
                         ctx.args.append(give)
 
@@ -73,16 +73,21 @@ class Command:
                                 else:
                                     give = argument.annotation(give)
                             except:
-                                raise ValueError(f"Failed to convert {give} to {converter}")
+                                raise ArgumentError(f"Failed to convert '{give}' to '{converter.__name__}'")
                         
 
                         ctx.kwargs[argument.name] = give
                         
                 except IndexError:
                     if argument.default == inspect._empty:
-                        raise ValueError(f"'{argument.name}' is a required argument that is missing")
+                        raise ArgumentError(f"'{argument.name}' is a required argument that is missing")
                     if argument.kind != inspect._ParameterKind.KEYWORD_ONLY:
                         ctx.args.append(argument.default)
+
+    def _dispatch_error(self, ctx, error):
+        """Dispatch an error"""
+
+        ctx.bot._dispatch("command_error", ctx, error)
 
     def __call__(self, update, context):
         """Runs the command with checks"""
@@ -106,14 +111,24 @@ class Command:
         if self.cog:
             other_args.append(self.cog)
         other_args.append(ctx)
-        self._parse_args(ctx)
 
-        return self.func(*other_args, *ctx.args, **ctx.kwargs)
+        try:
+            self._parse_args(ctx)
+            return self.func(*other_args, *ctx.args, **ctx.kwargs)
+        except Exception as e:
+            self._dispatch_error(ctx, e)
 
 class Cog:
     """The class to subclass a cog from"""
 
-    pass
+    @classmethod
+    def listener(cls, name=None):
+
+        def deco(func):
+            func._cog_listener = name or func.__name__
+            return func
+
+        return deco
 
 def command(*args, **kwargs):
     """Turns a function into a command"""
@@ -124,3 +139,9 @@ def command(*args, **kwargs):
         return command
     
     return deco
+
+def error_handler(func):
+    """Makes a function in a cog an error handler"""
+
+    func._is_error_handler = True
+    return func

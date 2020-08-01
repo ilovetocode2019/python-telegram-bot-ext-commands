@@ -2,10 +2,12 @@ import telegram
 from telegram.ext import Updater, CommandHandler
 import importlib
 import inspect
+import traceback
 import sys
+import types
 
 from .core import Command, Cog
-from .errors import NotFound, CommandAlreadyExists, LoadError
+from .errors import NotFound, CommandAlreadyExists, LoadError, AlreadyExists
 from .context import Context
 from .help import help_command
 from .utils import parse_args
@@ -19,8 +21,8 @@ class Bot:
 
         self.commands_dict = {}
         self._handlers = {}
-
         self.cogs_dict = {}
+        self._listeners = {}
 
         self.extensions = {}
 
@@ -124,6 +126,47 @@ class Bot:
 
         return list(self.commands_dict.values())
 
+    def event(self, func):
+        """Turns a function into the listener for a event"""
+
+        setattr(self, func.__name__, func)
+        return func
+
+    def add_listener(self, func, name=None):
+        """Adds a function as a listener"""
+
+        name = name or func.__name__
+
+        if name in self._listeners:
+            self._listeners[name].append(func)
+        else:
+            self._listeners[name] = [func]
+
+    def _dispatch(self, event, *args):
+        """Dispatches an event"""
+
+        event = f"on_{event}"
+        if event in self._listeners:
+            listeners = self._listeners[event]
+        else:
+            listeners = []
+
+        try:
+            listeners.append(getattr(self, event))
+        except AttributeError:
+            pass
+
+        for listener in listeners:
+            listener(*args)
+
+    def on_command_error(self, ctx, error):
+        """Default command error handler"""
+
+        if "on_command_error" in self._listeners:
+            return
+
+        traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+
     def load_extension(self, location):
         """Loads an extension into the bot"""
 
@@ -184,6 +227,13 @@ class Bot:
                     self._handlers[alias] = handler
 
                 self.commands_dict[command.name] = command
+
+            elif isinstance(command, types.MethodType):
+                try:
+                    listener_name = command._cog_listener
+                    self.add_listener(command, listener_name)
+                except AttributeError:
+                    pass
                 
         if hasattr(cog, "cog_check"):
             if not inspect.ismethod(cog.cog_check):

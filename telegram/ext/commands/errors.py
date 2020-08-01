@@ -8,7 +8,17 @@ class CommandAlreadyExists(Exception):
 
     pass
 
+class AlreadyExists(Exception):
+    """Raised when something already exists"""
+
+    pass
+
 class LoadError(Exception):
     """Raised when the bot cannot load a cog"""
+
+    pass
+
+class ArgumentError(Exception):
+    """Raised when parsing arguments fails"""
 
     pass
