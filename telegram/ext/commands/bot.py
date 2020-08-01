@@ -31,65 +31,9 @@ class Bot:
         command, given_args = parse_args(message.text)
         command = self.get_command(command)
 
-        args = []
-        pass_kwargs = {}
-
-        if command:
-            takes_args = [x[1] for x in list(inspect.signature(command.func).parameters.items())]
-            if command.cog:
-                takes_args.pop(0)
-            takes_args.pop(0)
-
-            for counter, argument in enumerate(takes_args):
-                try:
-                    if argument.kind != inspect._ParameterKind.KEYWORD_ONLY:
-                        give = given_args[0]
-
-                        converter = argument.annotation
-                        if converter != inspect._empty:
-                            try:
-                                if converter == telegram.ChatMember:
-                                    give = self.updater.bot.get_chat_member(chat_id=message.chat.id, user_id=give)
-                                elif converter == telegram.Chat:
-                                    give = self.updater.bot.get_chat(chat_id=give)
-                                else:
-                                    give = argument.annotation(give)
-                            except:
-                                raise ValueError(f"Failed to convert {give} to {converter}")
-    
-                        args.append(give)
-
-                        given_args.pop(0)
-                    else:
-                        give = " ".join(given_args)
-                        if give == "":
-                            raise IndexError()
-
-                        converter = argument.annotation
-                        if converter != inspect._empty:
-                            try:
-                                if converter == telegram.ChatMember:
-                                    give = self.updater.bot.get_chat_member(chat_id=message.chat.id, user_id=give)
-                                elif converter == telegram.Chat:
-                                    give = self.updater.bot.get_chat(chat_id=give)
-                                else:
-                                    give = argument.annotation(give)
-                            except:
-                                raise ValueError(f"Failed to convert {give} to {converter}")
-                        
-
-                        pass_kwargs[argument.name] = give
-                        
-                except IndexError:
-                    if argument.default == inspect._empty:
-                        raise ValueError(f"'{argument.name}' is a required argument that is missing")
-                    if argument.kind != inspect._ParameterKind.KEYWORD_ONLY:
-                        args.append(argument.default)
-
-
         kwargs = {"command": command}
-        kwargs["args"] = args
-        kwargs["kwargs"] = pass_kwargs
+        kwargs["args"] = []
+        kwargs["kwargs"] = {}
         kwargs["message"] = message
         kwargs["chat"] = message.chat
         kwargs["author"] = message.from_user
