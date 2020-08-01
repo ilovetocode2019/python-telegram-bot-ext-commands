@@ -2,7 +2,7 @@ import re
 import inspect
 
 from .context import Context
-from .errors import NotFound, ArgumentError
+from .errors import NotFound, ArgumentError, CheckFailure
 from .utils import parse_args
 
 class Command:
@@ -94,29 +94,30 @@ class Command:
 
         ctx = self.bot.get_context(update.effective_message)
 
-        self.invoke(ctx)
+        try:
+            self.invoke(ctx)
+        except Exception as e:
+            self._dispatch_error(ctx, e)
 
     def invoke(self, ctx):
         """Invokes the command with given context"""
 
         for check in self.checks:
             if not check(ctx):
-                return
+                raise CheckFailure("A check for this command has failed")
 
         if self.cog:
             if not self.cog.cog_check(ctx):
-                return
+                raise CheckFailure("A check for this command has failed")
 
         other_args = []
         if self.cog:
             other_args.append(self.cog)
         other_args.append(ctx)
 
-        try:
-            self._parse_args(ctx)
-            return self.func(*other_args, *ctx.args, **ctx.kwargs)
-        except Exception as e:
-            self._dispatch_error(ctx, e)
+        self._parse_args(ctx)
+        return self.func(*other_args, *ctx.args, **ctx.kwargs)
+
 
 class Cog:
     """The class to subclass a cog from"""
@@ -136,6 +137,7 @@ def command(*args, **kwargs):
     def deco(func):
         kwargs["name"] = kwargs.get("name") or func.__name__
         command = Command(func, **kwargs)
+        command.checks = getattr(func, "_command_checks", [])
         return command
     
     return deco
@@ -145,3 +147,19 @@ def error_handler(func):
 
     func._is_error_handler = True
     return func
+
+def check(check_function):
+
+    def deco(func):
+        if isinstance(func, Command):
+            func.add_check(check_function)
+        else:
+            if not getattr(func, "_command_checks", None):
+                func._command_checks = [check_function]
+            else:
+                func._command_checks.append(check_function)
+        return func
+
+        return
+
+    return deco

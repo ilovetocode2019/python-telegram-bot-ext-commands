@@ -22,3 +22,8 @@ class ArgumentError(Exception):
     """Raised when parsing arguments fails"""
 
     pass
+
+class CheckFailure(Exception):
+    """Raised when a check for a command fails"""
+
+    pass

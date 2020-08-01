@@ -53,6 +53,7 @@ class Bot:
                 raise CommandAlreadyExists("A command with that name already exists")
 
             command = Command(func, **kwargs)
+            command.checks = getattr(func, "_command_checks", [])
             
             handler = CommandHandler(name, command.__call__)
             self.dispatcher.add_handler(handler)
@@ -80,6 +81,7 @@ class Bot:
             raise CommandAlreadyExists("A command with that name already exists")
 
         command = Command(func, **kwargs)
+        command.checks = getattr(func, "_command_checks", [])
 
         handler = CommandHandler(name, command.__call__)
         self.dispatcher.add_handler(handler)
@@ -92,6 +94,7 @@ class Bot:
             self._handlers[alias] = handler
 
         self.commands_dict[name] = command
+        return command
 
     def remove_command(self, name):
         """Removes a command"""
