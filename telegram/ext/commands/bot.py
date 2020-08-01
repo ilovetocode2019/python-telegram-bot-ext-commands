@@ -2,7 +2,7 @@ import telegram
 from telegram.ext import Updater, CommandHandler
 import importlib
 import inspect
-
+import sys
 
 from .core import Command, Cog
 from .errors import NotFound, CommandAlreadyExists, LoadError
@@ -204,7 +204,14 @@ class Bot:
     def reload_extension(self, location):
         """Reloads an extension in the bot"""
 
-        pass
+        if location not in self.extensions:
+            raise NotFound("Extension not loaded")
+
+        lib = sys.modules[location]
+        importlib.reload(lib)
+        self.remove_cog(self.extensions[location])
+        
+        sys.modules[location].setup(self)
 
     def add_cog(self, cog):
         """Adds a cog to the bot"""
