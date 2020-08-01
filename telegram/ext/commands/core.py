@@ -88,7 +88,6 @@ class Command:
         """Runs the command with checks"""
 
         ctx = self.bot.get_context(update.effective_message)
-        self._parse_args(ctx)
 
         self.invoke(ctx)
 
@@ -107,6 +106,7 @@ class Command:
         if self.cog:
             other_args.append(self.cog)
         other_args.append(ctx)
+        self._parse_args(ctx)
 
         return self.func(*other_args, *ctx.args, **ctx.kwargs)
 
