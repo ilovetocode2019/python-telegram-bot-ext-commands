@@ -108,7 +108,7 @@ class Bot:
 
             command = Command(func, **kwargs)
             
-            handler = CommandHandler(name, command.invoke)
+            handler = CommandHandler(name, command.__call__)
             self.dispatcher.add_handler(handler)
 
             self._handlers[name] = handler
@@ -116,7 +116,7 @@ class Bot:
 
 
             for alias in command.aliases:
-                handler = CommandHandler(alias, command.invoke)
+                handler = CommandHandler(alias, command.__call__)
                 self.dispatcher.add_handler(handler)
                 self.commands_dict[alias] = command
 
@@ -135,13 +135,13 @@ class Bot:
 
         command = Command(func, **kwargs)
 
-        handler = CommandHandler(name, command.invoke)
+        handler = CommandHandler(name, command.__call__)
         self.dispatcher.add_handler(handler)
         self._handlers[name] = handler
 
 
         for alias in command.aliases:
-            handler = CommandHandler(alias, command.invoke)
+            handler = CommandHandler(alias, command.__call__)
             self.dispatcher.add_handler(handler)
             self._handlers[alias] = handler
 
@@ -230,12 +230,12 @@ class Bot:
                 if command.name in self.commands_dict:
                     raise CommandAlreadyExists("A command with that name already exists")
 
-                handler = CommandHandler(command.name, command.invoke)
+                handler = CommandHandler(command.name, command.__call__)
                 self.dispatcher.add_handler(handler)
                 self._handlers[command.name] = handler
 
                 for alias in command.aliases:
-                    handler = CommandHandler(alias, command.invoke)
+                    handler = CommandHandler(alias, command.__call__)
                     self.dispatcher.add_handler(handler)
                     self._handlers[alias] = handler
 

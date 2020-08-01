@@ -28,8 +28,8 @@ class Command:
             raise NotFound("That function is not yet a check")
         self.checks.remove(func)
 
-    def invoke(self, update, context):
-        """Runs a command with checks"""
+    def __call__(self, update, context):
+        """Runs the command with checks"""
 
         ctx = self.bot.get_context(update.effective_message)
 
@@ -47,7 +47,25 @@ class Command:
         other_args.append(ctx)
 
         return self.func(*other_args, *ctx.args, **ctx.kwargs)
-      
+
+    def invoke(self, ctx):
+        """Invokes the command with given context"""
+
+        for check in self.checks:
+            if not check(ctx):
+                return
+
+        if self.cog:
+            if not self.cog.cog_check(ctx):
+                return
+
+        other_args = []
+        if self.cog:
+            other_args.append(self.cog)
+        other_args.append(ctx)
+
+        return self.func(*other_args, *ctx.args, **ctx.kwargs)
+
 class Cog:
     """The class to subclass a cog from"""
 
