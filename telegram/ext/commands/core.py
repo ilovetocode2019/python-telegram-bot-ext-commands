@@ -1,5 +1,6 @@
 import re
 import inspect
+import telegram
 
 from .context import Context
 from .errors import NotFound, ArgumentError, CheckFailure
