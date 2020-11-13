@@ -1,6 +1,12 @@
 # Telegram-ext-commands
 
-A commands extension for python-telegram-bot, intended to be similar to discordpy commands extension
+## Archive note
+
+I am no longer maintaing this commands extension. See [telegram.py](https://github.com/ilovetocode2019/telegrampy), a telegram API wrapepr I wrote.
+
+<hr>
+
+A commands extension for python-telegram-bot, intended to be similar to the discord.py commands extension.
 
 ## Install
 
