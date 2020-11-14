@@ -2,7 +2,7 @@
 
 ## Archive note
 
-I am no longer maintaing this commands extension. See [telegram.py](https://github.com/ilovetocode2019/telegrampy), a telegram API wrapepr I wrote.
+I am no longer maintaing this commands extension. Instead see [telegram.py](https://github.com/ilovetocode2019/telegrampy), a telegram API wrapepr I wrote.
 
 <hr>
 
